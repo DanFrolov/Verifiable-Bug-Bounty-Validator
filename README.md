@@ -1,20 +1,67 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+The Problem
+In traditional bug bounty programs, human triagers must manually run and verify code submitted by researchers. This process is:
 
-# Run and deploy your AI Studio app
+Slow: Delays payouts for researchers.
 
-This contains everything you need to run your app locally.
+Subjective: Vulnerable to human error or bias.
 
-View your app in AI Studio: https://ai.studio/apps/815036df-603d-4001-b2cf-c1e710515126
+Opaque: No immutable record of why a fix was accepted or rejected.
 
-## Run Locally
+💡 The Solution
+Bounty-Hunter uses Verifiable AI Reasoning to provide a "Hardware-Attested Proof of Fix."
 
-**Prerequisites:**  Node.js
+Multi-Agent Audit: A specialized "Security Analyst" agent scans for regressions, while a "Lead Auditor" verifies the fix logic.
 
+Hardware Security: Reasoning runs inside Intel TDX enclaves (TEEs), ensuring the logic hasn't been tampered with by the node operator.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+On-Chain Audit Trail: Every verdict is recorded on the OpenGradient Nova Testnet via the INDIVIDUAL_FULL settlement mode, creating a permanent, auditable receipt for the bounty program.
+
+🛠️ Technical Stack
+AI Infrastructure: OpenGradient Network
+
+Compute Layer: Hybrid AI Compute Architecture (HACA) 
+
+Verification: Trusted Execution Environments (TEE)
+
+Payment Protocol: x402 (Autonomous stablecoin micropayments)
+
+Memory Layer: MemSync (Persistent context to prevent redundant audits and save tokens)
+
+Frontend: Streamlit
+
+Network: Nova Testnet (Chain ID: 10740) 
+
+🧠 Key Features
+Deterministic Token Management: Configured for low-balance environments (testing with 0.05 $OPG) using idempotent Permit2 approvals.
+
+Proof of Reasoning: Generates a direct link to the OpenGradient Explorer for every audit.
+
+Audit Vault: Uses memsync.add_memory() to store previous PR fingerprints, ensuring you never pay for the same audit twice.
+
+Autonomous Settlement: The agent "pays for its own brain" using the x402 gateway standard. 
+
+🏃 Getting Started
+1. Prerequisites
+Python 3.10+
+
+A wallet funded with testnet $OPG (Base Sepolia) and $ETH (Nova Testnet). Get them at the OpenGradient Faucet.
+
+2. Installation
+Bash
+git clone https://github.com/DanFrolov/Verifiable-Bug-Bounty-Validator/
+cd bounty-hunter
+pip install -r requirements.txt
+3. Environment Setup
+Create a .env file:
+
+Code snippet
+AGENT_PRIVATE_KEY=your_private_key_here
+4. Run Locally
+Bash
+streamlit run app.py
+🔗 Links & Resources
+Explorer:(https://explorer.opengradient.ai/)
+
+Docs:(https://docs.opengradient.ai/)
+
+SDK:(https://docs.opengradient.ai/api_reference/python_sdk/)

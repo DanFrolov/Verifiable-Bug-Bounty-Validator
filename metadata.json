@@ -1,0 +1,5 @@
+{
+  "name": "Bounty-Hunter Agent",
+  "description": "A decentralized AI agent that verifies GitHub PRs against issues using OpenGradient's TEE-secured LLMs and x402 on-chain settlement.",
+  "requestFramePermissions": []
+}

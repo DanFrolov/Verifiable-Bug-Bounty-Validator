@@ -14,10 +14,10 @@ def handle_permit2_approval():
     Target Network: Base Sepolia (or Nova Testnet as configured in the SDK)
     """
     # 1. Load the private key from environment variables
-    private_key = os.getenv("OG_PRIVATE_KEY")
+    private_key = os.getenv("AGENT_PRIVATE_KEY")
     
     if not private_key:
-        raise ValueError("OG_PRIVATE_KEY environment variable is not set.")
+        raise ValueError("AGENT_PRIVATE_KEY environment variable is not set.")
 
     # 2. Initialize the OpenGradient LLM client
     # The SDK handles the connection to the appropriate network (e.g., Base Sepolia)

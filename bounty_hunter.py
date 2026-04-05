@@ -1,6 +1,8 @@
 import os
 import json
-import og
+import opengradient as og
+from web3 import Web3
+from opengradient.client.opg_token import _get_web3_and_contract
 import streamlit as st
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
@@ -24,20 +26,44 @@ class FinalVerification(BaseModel):
 
 # --- UTILS ---
 def get_llm_client():
-    AGENT_PRIVATE_KEY = os.getenv("AGENT_PRIVATE_KEY", "0x0000000000000000000000000000000000000000000000000000000000000000")
-    return og.LLM(private_key=AGENT_PRIVATE_KEY)
+    # Prefer `AGENT_PRIVATE_KEY`, fall back to `OG_PRIVATE_KEY` for convenience.
+    AGENT_PRIVATE_KEY = os.getenv("AGENT_PRIVATE_KEY")
+    OG_PRIVATE_KEY = os.getenv("OG_PRIVATE_KEY")
+    private_key = AGENT_PRIVATE_KEY or OG_PRIVATE_KEY
+
+    if not private_key or private_key == "0x0000000000000000000000000000000000000000000000000000000000000000":
+        st.error("❌ AGENT_PRIVATE_KEY (or OG_PRIVATE_KEY) is missing! Please set it in your environment variables or secrets.")
+        st.stop()
+
+    try:
+        return og.LLM(private_key=private_key)
+    except Exception as e:
+        st.error(f"Failed to initialize LLM client: {e}")
+        st.stop()
 
 def setup_agent_wallet(llm):
     """Ensures the agent's wallet is ready for autonomous commerce."""
     try:
-        balance = llm.get_opg_balance()
-        st.sidebar.write(f"**OPG Balance:** {balance}")
+        # Show the on-chain OPG balance for the agent wallet so you can
+        # verify the exact address being checked by the SDK matches the one
+        # you inspected in a block explorer.
+        try:
+            w3, token, _ = _get_web3_and_contract()
+            owner = Web3.to_checksum_address(llm._wallet_account.address)
+            balance_raw = token.functions.balanceOf(owner).call()
+            balance = balance_raw / 10**18
+            st.sidebar.write(f"**Agent Address:** {owner}")
+            st.sidebar.write(f"**OPG Balance (on-chain):** {balance}")
+        except Exception as e:
+            st.sidebar.error(f"Failed to read on-chain OPG balance: {e}")
+            balance = None
         if balance < 0.05:
             st.sidebar.warning("Low OPG balance! Visit [faucet.opengradient.ai](https://faucet.opengradient.ai)")
     except Exception as e:
         st.sidebar.error(f"Balance check failed: {e}")
 
-    approval = llm.ensure_opg_approval(opg_amount=0.05)
+    # The SDK requires a minimum `min_allowance` of 0.1 OPG
+    approval = llm.ensure_opg_approval(0.1)
     st.sidebar.write(f"**Current Allowance:** {approval.allowance_before}")
     return approval
 
